@@ -5,7 +5,6 @@ import traceback
 from DAO.DAO import DAO
 from DAO import StatusCodes
 from Common.LogRoutine import *
-from Output.HTMLGenerator import HTMLGenerator
 from Common.configobj import ConfigObj
 
 class CreateUserHandler( webapp.RequestHandler ):
@@ -15,7 +14,6 @@ class CreateUserHandler( webapp.RequestHandler ):
 
     self.log = getLogger()
     self.dao = DAO()  
-    self.output_generator = HTMLGenerator()
     self.config = ConfigObj("Config/skajserver.cfg")
 
  
@@ -26,18 +24,25 @@ class CreateUserHandler( webapp.RequestHandler ):
     NO SECURITY YET.....
     """
     response = "sorry... operation failed"
-    
+    data = "success1"
     try:
       
       self.log.debug("CreateUserHandler get")
-      
+      data = "success2"
       user_name = self.request.get("user_name")    
       password = self.request.get("password")    
+      data = "success3"
+      self.log.debug("user URL is " + user_name )
 
+      (status, user ) = self.dao.createUser( user_name, password )
+      data = "success4"
       
-      response = self.__process_data( long_url, short_url, creator, tags )
-      
+      #print "fooooooooooooo"
+
+      if status == StatusCodes.SUCCESSFUL:
+        self.log.debug("SUCCESSFULLY CREATED USER " + user_name )
+
     except:
-      self.log.error("StoreHandler::get ex " + traceback.format_exc()  ) 
+      self.log.error("CreateUserHandler::get ex " + traceback.format_exc()  ) 
       
-    self.response.out.write( response )
+    self.response.out.write( data )

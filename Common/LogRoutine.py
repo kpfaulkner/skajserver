@@ -1,4 +1,4 @@
-#Copyright Ken Faulkner 2007.
+#Copyright Ken Faulkner 2010.
 
 import logging
 import os
@@ -9,7 +9,7 @@ logLevelDict = { "DEBUG":logging.DEBUG, "ERROR":logging.ERROR, "INFO":logging.IN
 
 log = None
 
-def getLogger(logLevel="DEBUG", logName="linkmenow", fileName=None):
+def getLogger(logLevel="DEBUG", logName="skajserver", fileName=None):
   ''' LogLevel is just a string...   but hell, I can live with that. '''
 
   

@@ -1,32 +1,13 @@
-application: linkmenowfaulkner
+application: skajserver
 version: 1
 runtime: python
 api_version: 1
 
 handlers:
 
-- url: /index.html
-  static_files: Templates/index.html
-  upload: Templates/index.html
-  
-- url: /apiinfo.html
-  static_files: Templates/apiinfo.html
-  upload: Templates/apiinfo.html
-
-- url: /stats.html
-  static_files: Templates/stats.html
-  upload: Templates/stats.html
-  
-  
-
-- url: /(.*\.(ico|js|gif|png|jpg|css))
-  static_files: Templates/\1
-  upload: Templates/(.*\.(ico|js|gif|png|jpg|css))
-
-
 - url: /
-  static_files: Templates/index.html
-  upload: Templates/index.html
+  static_files: index.html
+  upload: index.html
 
 
 

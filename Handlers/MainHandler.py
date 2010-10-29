@@ -21,7 +21,7 @@ class MainHandler(webapp.RequestHandler):
       
 
       
-
+      data = "hello"
       #data = open( "index.html").read()
       self.log.debug("data " + data )
       
