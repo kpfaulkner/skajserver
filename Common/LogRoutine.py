@@ -15,10 +15,10 @@ def getLogger(logLevel="DEBUG", logName="skajserver", fileName=None):
   
   try:
   
-    global log
+    #global log
     
-    if log != None:
-      return log
+    #if log != None:
+      #return log
       
     if fileName == None:
       fileName = logName+".log"

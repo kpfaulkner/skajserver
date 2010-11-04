@@ -12,7 +12,7 @@ import urllib
 from Common.LogRoutine import *
 from Handlers.MainHandler import MainHandler
 from Handlers.CreateUserHandler import CreateUserHandler
-
+from Handlers.LoginHandler import LoginHandler
 from django import http
 
 import os
@@ -29,7 +29,9 @@ def main():
   log.debug("hostname is " + str( host_name ) )
   
   application = webapp.WSGIApplication( [ ('/', MainHandler),
-                                          ('/1/createuser(.*)', CreateUserHandler)
+                                          ('/1/createuser(.*)', CreateUserHandler),
+                                          ('/1/login(.*)', LoginHandler),
+                                          
                                            ],
                                        debug=True)
   wsgiref.handlers.CGIHandler().run(application)

@@ -9,13 +9,23 @@ from google.appengine.ext import db
 import StatusCodes
 
 class User( db.Model ):
+  """
+  Represents the user acct. NOT just a user within a particular game.
+  For players within a specific game, see Player class.
+  """
   name = db.StringProperty( required = True )
   passwd = db.StringProperty( required = True )
   number_wins = db.IntegerProperty( required = False )
   number_losses = db.IntegerProperty( required = False )
 
+  # token the user needs to pass for all requests to prove they're who they say they are.
+  # this is just a temporary measure until I figure out what to do for real.
+  # empty token means not logged in.
+  token = db.StringProperty( required = False )
+
 class Game( db.Model ):
 
+  game_name = db.StringProperty( required = True )
   turn = db.StringProperty( required = True )
   state = db.StringProperty( required = True )
 
@@ -52,6 +62,7 @@ class DAO( object ):
 
   def __init__(self):
     self.log = getLogger(  )
+    self.log.info("XXXXXXX")
     
     self.config = ConfigObj("Config/skajserver.cfg")
 

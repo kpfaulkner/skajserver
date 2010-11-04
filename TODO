@@ -1,5 +1,23 @@
 TODO:
 =====
 
++ Create User
++ Get User
++ Join Game
++ Concede
++ Login
++ Create Game
++ List Games
++ Leave Game
++ List Maps
++ Select Map
++ Attack
++ Select Bonus
++ List Bonuses
++ Place Armies
 
 
+NOTES:
+======
+
+- How do I tell if someone is logged on? Cookies? something similar? or how? 
