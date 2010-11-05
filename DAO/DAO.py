@@ -182,4 +182,55 @@ class DAO( object ):
       self.log.error("DAO:createUser ex " + traceback.format_exc() )
 
     return ( status, game )
+  
+  def getGame( self, name ):
+    """
+    Get game based on name.
+    Dont like the idea of returning None, but hey....
+    """
+
+    self.log.info("DAO:getGame start")
+
+    game = None
+    status = StatusCodes.GAME_DOES_NOT_EXIST
+
+    try:
+      self.log.debug("Trying to get  %s"%(username) )
+      
+      game_list = db.GqlQuery("SELECT * FROM Game WHERE game_name = :1 ", name )
+      
+      
+      if game_list.count() > 0:
     
+        game = game_list.get()
+        status = StatusCodes.SUCCESSFUL
+
+    except:
+      self.log.error("DAO:getGame ex " + traceback.format_exc() )
+
+    return ( status, game)
+    
+  def modifyGameState( self, name, state ):
+    
+    self.log.info("DAO:modifyGameState start")
+
+    game = None
+    status = StatusCodes.GAME_DOES_NOT_EXIST
+
+    try:
+      self.log.debug("Trying to get  %s"%(name) )
+      
+      game_list = db.GqlQuery("SELECT * FROM Game WHERE game_name = :1 ", name )
+      
+      if game_list.count() > 0:
+    
+        game = game_list.get()
+        game.state = state
+        db.put( game )
+        
+        status = StatusCodes.SUCCESSFUL
+
+    except:
+      self.log.error("DAO:getGame ex " + traceback.format_exc() )
+
+    return ( status, game)   

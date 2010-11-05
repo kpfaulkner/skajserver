@@ -43,6 +43,32 @@ class GameHandler( webapp.RequestHandler ):
       
     self.response.out.write( data )
 
+  def handleModifyGameState(self, url):
+    """
+    Create a game... ..   DUH
+    NO SECURITY YET.....
+    """
+    response = "sorry... operation failed"
+    data = "<game>FAILED</game>"
+
+    try:
+      self.log.debug("GameHandler:handleModifyGameState start")
+
+      name = self.request.get("name")    
+      state = self.request.get("state")
+  
+      
+      (stat, game) =  self.dao.modifyGameState( name, state )
+          
+      if stat == StatusCodes.SUCCESSFUL:
+        self.log.debug("SUCCESSFULLY MODIFIED STATE GAME " + name )
+        data = "<game name=%s></game>"%( name )
+
+    except:
+      self.log.error("GameHandler:handleModifyGameState  ex " + traceback.format_exc()  ) 
+      
+    self.response.out.write( data )
+
   def get(self, url):
     """
     handle various User based gets
@@ -57,6 +83,9 @@ class GameHandler( webapp.RequestHandler ):
     # FIXME
     if path == "/1/creategame":
       self.handleCreateGame( url )
+    else:
+      if path == "/1/modifygamestate":
+        self.handleModifyGameState( url )
 
 
 

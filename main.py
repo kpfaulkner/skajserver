@@ -34,6 +34,7 @@ def main():
                                           ('/1/login(.*)', UserHandler),
                                           ('/1/getuser(.*)', UserHandler),
                                           ('/1/creategame(.*)', GameHandler),
+                                          ('/1/modifygamestate(.*)', GameHandler),
 
                                           
                                            ],
