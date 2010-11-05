@@ -25,13 +25,19 @@ class User( db.Model ):
 
 class Game( db.Model ):
 
+  STATE_NOT_STARTED = "notstarted"
+  STATE_STARTED = "started"
+
   game_name = db.StringProperty( required = True )
-  turn = db.StringProperty( required = True )
-  state = db.StringProperty( required = True )
+  turn = db.StringProperty( required = False )
+  state = db.StringProperty( required = False )
 
   # number of REAL players, not including a dummy player for the 
   # non-taken land.
   number_players = db.IntegerProperty( required = True )
+
+  # password to join game.
+  passwd = db.StringProperty( required = False )
 
 
 class Map( db.Model ):
@@ -57,15 +63,25 @@ class Country( db.Model ):
   player = db.ReferenceProperty( Player, required = True )
   armies = db.IntegerProperty( required = True )
 
+  # name, eg. western australia
+  name = db.StringProperty( required = True )
 
+  
 class DAO( object ):
 
   def __init__(self):
     self.log = getLogger(  )
     self.log.info("XXXXXXX")
-    
+
     self.config = ConfigObj("Config/skajserver.cfg")
 
+
+  def storeUser( self, user ):
+    """
+    Just store the user.
+    """
+
+    db.put( user )
 
   def getUserWithPassword( self, username, password ):
     """
@@ -146,4 +162,24 @@ class DAO( object ):
     return ( status, user )
 
  
+ #########################################
+
+ # GAME
+
+  def createGame( self, name, password, num_players ):
+    self.log.info("DAO:createGame start")
+
+    status = StatusCodes.SUCCESSFUL
+    game = None
+
+    try:
+       
+      game = Game( game_name = name, passwd = password, number_players = num_players)
+
+      db.put( game )
+
+    except:
+      self.log.error("DAO:createUser ex " + traceback.format_exc() )
+
+    return ( status, game )
     

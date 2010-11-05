@@ -1,11 +1,11 @@
 TODO:
 =====
 
-+ Create User
-+ Get User
+* Create User
+* Get User
 + Join Game
 + Concede
-+ Login
+* Login (get token)
 + Create Game
 + List Games
 + Leave Game
@@ -21,3 +21,4 @@ NOTES:
 ======
 
 - How do I tell if someone is logged on? Cookies? something similar? or how? 
+- How to store maps... and determine which country can attack which other?

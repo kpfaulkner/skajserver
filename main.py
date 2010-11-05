@@ -11,8 +11,9 @@ import logging
 import urllib
 from Common.LogRoutine import *
 from Handlers.MainHandler import MainHandler
-from Handlers.CreateUserHandler import CreateUserHandler
-from Handlers.LoginHandler import LoginHandler
+from Handlers.UserHandler import UserHandler
+from Handlers.GameHandler import GameHandler
+
 from django import http
 
 import os
@@ -29,8 +30,11 @@ def main():
   log.debug("hostname is " + str( host_name ) )
   
   application = webapp.WSGIApplication( [ ('/', MainHandler),
-                                          ('/1/createuser(.*)', CreateUserHandler),
-                                          ('/1/login(.*)', LoginHandler),
+                                          ('/1/createuser(.*)', UserHandler),
+                                          ('/1/login(.*)', UserHandler),
+                                          ('/1/getuser(.*)', UserHandler),
+                                          ('/1/creategame(.*)', GameHandler),
+
                                           
                                            ],
                                        debug=True)
