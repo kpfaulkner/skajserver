@@ -130,6 +130,9 @@ class GameHandler( webapp.RequestHandler ):
     else:
       if path == "/1/modifygamestate":
         self.handleModifyGameState( url )
+      else:
+        if path == "/1/joingame":
+          self.handleJoinGame( url )
 
 
 
