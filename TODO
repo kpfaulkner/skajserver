@@ -3,7 +3,10 @@ TODO:
 
 * Create User
 * Get User
-+ Join Game
++ Create Player
++ Delete Player
++ Join Game  (will create a player for the game)
+* Change Game State.
 + Concede
 * Login (get token)
 + Create Game

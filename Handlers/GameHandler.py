@@ -69,6 +69,50 @@ class GameHandler( webapp.RequestHandler ):
       
     self.response.out.write( data )
 
+  def handleJoinGame(self, url):
+    """
+    Join a game... ..   DUH
+    NO SECURITY YET.....
+
+    1) Get username
+    2) get token
+    3) authenticate
+    4) get game
+    5) create player for game
+    """
+    response = "sorry... operation failed"
+    data = "<game>FAILED</game>"
+
+    try:
+      self.log.debug("GameHandler:handleJoinGame start")
+
+      user_name = self.request.get("username")
+      token = self.request.get("token")
+      state = self.request.get("state")
+      game_name = self.request.get("gamename")
+      
+      ( stat, user ) =  self.dao.authenticateUser( user_name, token )
+
+      if stat == StatusCodes.SUCCESSFUL:
+        (game_status, game) = self.dao.getGame( game_name )
+
+        if game_status == StatusCodes.SUCCESSFUL and game != None:
+
+          # check if user has already joined the game.
+          ( stat, player ) = self.dao.getPlayerForGame( user_name, game )
+          
+          if stat != StatusCodes.PLAYER_NOT_IN_GAME:
+
+            # create the player.
+            ( player_status, player) = self.dao.createPlayer( user, game )
+            if player_status == StatusCodes.SUCCESSFUL:
+              data = "<game>JOINED</game>"
+
+    except:
+      self.log.error("GameHandler:handleJoinGame  ex " + traceback.format_exc()  ) 
+      
+    self.response.out.write( data )
+
   def get(self, url):
     """
     handle various User based gets

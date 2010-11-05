@@ -40,18 +40,30 @@ class Game( db.Model ):
   passwd = db.StringProperty( required = False )
 
 
-class Map( db.Model ):
+#class Map( db.Model ):
 
   # many many countries.
-  game = db.ReferenceProperty( Game, required=True )
+  #game = db.ReferenceProperty( Game, required=True )
 
 class Player( db.Model ):
+
+  # unsure how to do queries with using reference values.
+  # eg, I'd want to do: SELECT * FROM Player WHERE game='mygame' and user.name="fred"
+  # so will include game names and usernames in this entry aswell.
+  # dont like it... but will keep this here for the moment.
+
+  # username
+  user_name = db.StringProperty( required = True )
+  game_name = db.StringProperty( required = True )
 
   # user associated with this player.
   user = db.ReferenceProperty( User, required = True )
 
   # associated with a particular map.
-  game_map = db.ReferenceProperty( Map, required = True )
+  #game_map = db.ReferenceProperty( Map, required = True )
+
+  # associate with a game
+  game = db.ReferenceProperty( Game, required=True )
 
   # bonus's...   not used yet.
   bonus = db.StringProperty( required = False )
@@ -75,6 +87,31 @@ class DAO( object ):
 
     self.config = ConfigObj("Config/skajserver.cfg")
 
+
+  def authenticateUser( self, username, token ):
+    """
+    Confirm that username and token match what the server thinks.
+    """
+
+    user = None
+    status = StatusCodes.FAILED
+
+    try:
+
+      (stat, user) = self.getUser( username )
+
+      # check passwd.
+      if stat == StatusCodes.SUCCESSFUL:
+        if user.token == token:
+          status = StatusCodes.SUCCESSFUL
+        else:
+          status = StatusCodes.USER_NOT_LOGGED_IN
+
+    except:
+      self.log.error("DAO:getUserWithPassword ex " + traceback.format_exc() )
+
+
+    return ( status, user )
 
   def storeUser( self, user ):
     """
@@ -227,10 +264,61 @@ class DAO( object ):
         game = game_list.get()
         game.state = state
         db.put( game )
-        
+
         status = StatusCodes.SUCCESSFUL
 
     except:
       self.log.error("DAO:getGame ex " + traceback.format_exc() )
 
     return ( status, game)   
+
+    ##############################3
+    # PLAYER
+
+  def getPlayerForGame( self, user_name, game_name ):
+    """
+    Get Player for particular user and game combo.
+    Dont like the idea of returning None, but hey....
+    """
+
+    self.log.info("DAO:getPlayerForGame start")
+
+    player = None
+    status = StatusCodes.PLAYER_NOT_IN_GAME
+
+    try:
+      
+      
+      player_list = db.GqlQuery("SELECT * FROM Player WHERE user_name = :1 and game_name = :2", user_name, game_name )
+      
+      
+      if player_list.count() > 0:
+    
+        player = player_list.get()
+        status = StatusCodes.SUCCESSFUL
+
+    except:
+      self.log.error("DAO:getPlayerForGame ex " + traceback.format_exc() )
+
+    return ( status, player)
+
+  def createPlayer( self, user, game ):
+    self.log.info("DAO:createPlayer start")
+
+    status = StatusCodes.SUCCESSFUL
+    player = None
+
+    try:
+      
+      # hate the fact I'm using names and objects... 
+      player = Player( user_name = user.name, game_name = game.name, user = user, game = game )
+
+      db.put( player )
+
+    except:
+      self.log.error("DAO:createPlayer ex " + traceback.format_exc() )
+      status = StatusCodes.FAILED
+
+    return ( status, player )
+
+      
