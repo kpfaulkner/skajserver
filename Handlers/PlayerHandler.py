@@ -21,11 +21,11 @@ class PlayerHandler( webapp.RequestHandler ):
     create player based on user that is logged in. 
     """
     response = "sorry... operation failed"
-    data = "<user>FAILED</user>"
+    data = "<player>FAILED</player>"
 
     try:
       
-      self.log.debug("UserHandler:handleLogin")
+      self.log.debug("PlayerHandler:createPlayerHandler")
 
       user_name = self.request.get("user_name")    
       token = self.request.get("token")    
@@ -40,108 +40,52 @@ class PlayerHandler( webapp.RequestHandler ):
         
         if stat != StatusCodes.PLAYER_NOT_IN_GAME:
 
-          # create the player.
-          #player = Player( )
-        # store.
+          ( user_status, user) = self.dao.getUser( user_name )
 
-      self.log.debug("user URL is " + user_name )
+          if user_status == StatusCodes.SUCCESS:
 
-      (stat, user ) = self.dao.getUserWithPassword( user_name, password )
+            # create the player.
+            player = self.dao.createPlayer( user, game )
 
-      print "stat is "+str(stat)
 
-      #print "fooooooooooooo"
-
-      if stat == StatusCodes.SUCCESSFUL:
-        self.log.debug("SUCCESSFULLY RETRIEVED USER " + user_name )
-
-        # get token.
-        new_token = str( random.randrange(0,1000000000) )
-        user.token = new_token
-        
-        # store it 
-        self.dao.storeUser( user)
-
-        data = "<user id=%s token=%s></user>"%( user_name, new_token )
+            data = "<player id=%s game_name=%s></user>"%( user_name, game_name )
 
     except:
-      self.log.error("UserHandler:handleLogin ex " + traceback.format_exc()  ) 
+      self.log.error("PlayerHandler:createPlayerHandler ex " + traceback.format_exc()  ) 
       
     self.response.out.write( data )
 
-  def setPlayerHandler(self, url):
 
-  def getPlayerHandler( self, url):
-
-
+  def getPlayerHandlerForGame( self, url):
     """
     Retrieve User.
     NO SECURITY YET.....
     MARKS the user as logged in (on the server?)
     """
     response = "sorry... operation failed"
-    data = "<user>FAILED</user>"
+    data = "<player>FAILED</player>"
 
     try:
       
-      self.log.debug("UserHandler:handleGetUser")
+      self.log.debug("PlayerHandler:getPlayerHandlerForGame")
 
       user_name = self.request.get("user_name")    
-      password = self.request.get("password")    
+      token = self.request.get("token")    
+      game_name = self.request.get("game_name")
 
-      self.log.debug("user URL is " + user_name )
+      (stat, player ) = self.dao.getPlayerForGame( user_name, game_name )
 
-      (stat, user ) = self.dao.getUserWithPassword( user_name, password )
-
-      print "stat is "+str(stat)
-
-      #print "fooooooooooooo"
 
       if stat == StatusCodes.SUCCESSFUL:
-        self.log.debug("SUCCESSFULLY RETRIEVED USER " + user_name )
-
-
-        data = "<user id=%s token=%s></user>"%( user_name, user.token )
+        self.log.debug("SUCCESSFULLY RETRIEVED PLAYER " + user_name )
+        data = "<player id=%s game_name=%s></user>"%( user_name, game_name )
 
     except:
-      self.log.error("UserHandler:handleGetUser ex " + traceback.format_exc()  ) 
+      self.log.error("PlayerHandler:getPlayerHandlerForGame ex " + traceback.format_exc()  ) 
       
     self.response.out.write( data ) 
             
-  def handleCreateUser(self, url):
-    """
-    Create a user... ..   DUH
-    NO SECURITY YET.....
-    """
-    response = "sorry... operation failed"
-    data = "<user>FAILED</user>"
 
-    try:
-      
-      d = str(dir(self.request ))
-      self.log.debug("D " + d )
-      self.log.debug("path "+self.request.path)
-      self.log.debug("path_url " + self.request.path_url)
-      self.log.debug("UserHandler:handleCreateUser")
-      data = "success2"
-      user_name = self.request.get("user_name")    
-      password = self.request.get("password")    
-      data = "success3"
-      self.log.debug("user URL is " + user_name )
-
-      (status, user ) = self.dao.createUser( user_name, password )
-      data = "success4"
-      
-      #print "fooooooooooooo"
-
-      if status == StatusCodes.SUCCESSFUL:
-        self.log.debug("SUCCESSFULLY CREATED USER " + user_name )
-        data = "<user name=%s></user>"%(user_name)
-
-    except:
-      self.log.error("UserHandler:handleCreateUser ex " + traceback.format_exc()  ) 
-      
-    self.response.out.write( data )
 
   def get(self, url):
     """
@@ -155,14 +99,12 @@ class PlayerHandler( webapp.RequestHandler ):
 
     # dict string --> method.
     # FIXME
-    if path == "/1/createuser":
-      self.handleCreateUser( url )
+    if path == "/1/createplayer":
+      self.createPlayerHandler( url )
     else:
-      if path == "/1/login":
-        self.handleLogin( url )
-      else:
-        if path == "/1/getuser":
-          self.handleGetUser( url )
+      if path == "/1/getplayer":
+        self.getPlayerHandlerForGame( url )
+
 
 
 

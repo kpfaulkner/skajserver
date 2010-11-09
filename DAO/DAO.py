@@ -322,3 +322,27 @@ class DAO( object ):
     return ( status, player )
 
       
+########################################
+
+  def createCountryForPlayer( self, player_name, country_name, num_armies, game_name ):
+    self.log.info("DAO:createCountry start")
+
+    status = StatusCodes.SUCCESSFUL
+    country = None
+
+    try:
+      
+      ( player_stat, player ) = self.getPlayerForGame( player_name, game_name )
+
+      if player_stat == StatusCodes.SUCCESSFUL:
+        # hate the fact I'm using names and objects... 
+        country = Country( player = player, armies = num_armies, name = country_name )
+        db.put( country )
+
+    except:
+      self.log.error("DAO:createCountryForPlayer ex " + traceback.format_exc() )
+      status = StatusCodes.FAILED
+
+    return ( status, country )
+
+
