@@ -31,25 +31,35 @@ class PlayerHandler( webapp.RequestHandler ):
       token = self.request.get("token")    
       
       # need to know which game we're joining.
-      game = self.request.get("game_name")
+      game_name = self.request.get("game_name")
 
       if self.dao.authenticateUser( user_name, token ):
 
         # check if user has already joined the game.
-        ( stat, player ) = self.dao.getPlayerForGame( user_name, game )
+        ( stat, player ) = self.dao.getPlayerForGame( user_name, game_name )
         
-        if stat != StatusCodes.PLAYER_NOT_IN_GAME:
+        if stat == StatusCodes.PLAYER_NOT_IN_GAME:
 
+          self.log.debug("player does not exist in game")
           ( user_status, user) = self.dao.getUser( user_name )
 
-          if user_status == StatusCodes.SUCCESS:
+          if user_status == StatusCodes.SUCCESSFUL:
 
+            self.log.debug("have user successfully")
+
+            # get the game.
+            ( game_stat, game) = self.dao.getGame( game_name )
+
+            self.log.debug("game name is " + game.game_name)
+            
             # create the player.
             player = self.dao.createPlayer( user, game )
 
 
             data = "<player id=%s game_name=%s></user>"%( user_name, game_name )
-
+        else:
+          self.log.debug("player already in game")
+          data = "<player id=%s game_name=%s></user>"%( user_name, game_name )
     except:
       self.log.error("PlayerHandler:createPlayerHandler ex " + traceback.format_exc()  ) 
       

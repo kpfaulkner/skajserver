@@ -13,6 +13,8 @@ from Common.LogRoutine import *
 from Handlers.MainHandler import MainHandler
 from Handlers.UserHandler import UserHandler
 from Handlers.GameHandler import GameHandler
+from Handlers.PlayerHandler import PlayerHandler
+#from Handlers.ActionHander import ActionHandler
 
 from django import http
 
@@ -36,6 +38,10 @@ def main():
                                           ('/1/creategame(.*)', GameHandler),
                                           ('/1/modifygamestate(.*)', GameHandler),
                                           ('/1/joingame(.*)', GameHandler),
+                                          ('/1/createplayer(.*)', PlayerHandler),
+                                          ('/1/startgame(.*)', GameHandler),
+                                          ('/foo(.*)', GameHandler),
+
 
                                           
                                            ],

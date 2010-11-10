@@ -7,87 +7,96 @@ import md5
 import urllib
 from google.appengine.ext import db
 import StatusCodes
-
-class User( db.Model ):
-  """
-  Represents the user acct. NOT just a user within a particular game.
-  For players within a specific game, see Player class.
-  """
-  name = db.StringProperty( required = True )
-  passwd = db.StringProperty( required = True )
-  number_wins = db.IntegerProperty( required = False )
-  number_losses = db.IntegerProperty( required = False )
-
-  # token the user needs to pass for all requests to prove they're who they say they are.
-  # this is just a temporary measure until I figure out what to do for real.
-  # empty token means not logged in.
-  token = db.StringProperty( required = False )
-
-class Game( db.Model ):
-
-  STATE_NOT_STARTED = "notstarted"
-  STATE_STARTED = "started"
-
-  game_name = db.StringProperty( required = True )
-  turn = db.StringProperty( required = False )
-  state = db.StringProperty( required = False )
-
-  # number of REAL players, not including a dummy player for the 
-  # non-taken land.
-  number_players = db.IntegerProperty( required = True )
-
-  # password to join game.
-  passwd = db.StringProperty( required = False )
-
-
-#class Map( db.Model ):
-
-  # many many countries.
-  #game = db.ReferenceProperty( Game, required=True )
-
-class Player( db.Model ):
-
-  # unsure how to do queries with using reference values.
-  # eg, I'd want to do: SELECT * FROM Player WHERE game='mygame' and user.name="fred"
-  # so will include game names and usernames in this entry aswell.
-  # dont like it... but will keep this here for the moment.
-
-  # username
-  user_name = db.StringProperty( required = True )
-  game_name = db.StringProperty( required = True )
-
-  # user associated with this player.
-  user = db.ReferenceProperty( User, required = True )
-
-  # associated with a particular map.
-  #game_map = db.ReferenceProperty( Map, required = True )
-
-  # associate with a game
-  game = db.ReferenceProperty( Game, required=True )
-
-  # bonus's...   not used yet.
-  bonus = db.StringProperty( required = False )
-  
-      
-# country for a specific game instance...
-class Country( db.Model ):
-
-  player = db.ReferenceProperty( Player, required = True )
-  armies = db.IntegerProperty( required = True )
-
-  # name, eg. western australia
-  name = db.StringProperty( required = True )
+from DAOModels import *
 
   
+# *Obj classes are wrapper classes to the DAO instances.
+
+##################3 NOT USED YET
+class GameObj( object ):
+  """
+  Game object...
+  """
+
+  # game model.
+  game = None
+
+  # PlayerObj list.
+  players = []
+
+class PlayerObj( object ):
+  """
+  player.....
+  """
+
+  player = None
+
+class CountryObj( object ):
+  """
+  Country....
+  """
+
+  country = None
+
+################# NOT USED YET
+
 class DAO( object ):
 
   def __init__(self):
     self.log = getLogger(  )
-    self.log.info("XXXXXXX")
 
     self.config = ConfigObj("Config/skajserver.cfg")
 
 
+  def generateCountryMaster( self ):
+    """
+    Dummy...
+    """
+    entry1 = GameCountryMaster( map_name = "default", country_name="A", border_countries=["B","C","D"])
+    db.put( entry1 )
+
+    entry2 = GameCountryMaster( map_name = "default", country_name="B", border_countries=["A","C"])
+    db.put( entry2 )
+    
+    entry3 = GameCountryMaster( map_name = "default", country_name="C", border_countries=["A","B","E"])
+    db.put( entry3 )
+    
+    entry4 = GameCountryMaster( map_name = "default", country_name="D", border_countries=["A"])
+    db.put( entry4 )
+    
+    entry5 = GameCountryMaster( map_name = "default", country_name="E", border_countries=["C"])
+    db.put( entry5 )
+
+
+  def getMasterCountries( self, map_name ):
+    """
+    Get a list of countries for a particular map.
+    """
+
+
+    self.log.info("DAO:getMasterCountries start")
+
+    country_list = []
+    status = StatusCodes.FAILED
+
+    try:
+      self.log.debug("Trying to get  %s"%(map_name) )
+      
+      country_list2 = db.GqlQuery("SELECT * FROM GameCountryMaster WHERE map_name = :1 ", map_name )
+      
+      if country_list2.count() > 0:
+    
+        # ugly... but want to check something
+        for i in country_list2:
+          country_list.append( i )
+
+        status = StatusCodes.SUCCESSFUL
+
+    except:
+      self.log.error("DAO:getMasterCountries ex " + traceback.format_exc() )
+
+    return ( status, country_list )
+ 
   def authenticateUser( self, username, token ):
     """
     Confirm that username and token match what the server thinks.
@@ -203,7 +212,7 @@ class DAO( object ):
 
  # GAME
 
-  def createGame( self, name, password, num_players ):
+  def createGame( self, name, password, num_players, map_name ):
     self.log.info("DAO:createGame start")
 
     status = StatusCodes.SUCCESSFUL
@@ -211,7 +220,7 @@ class DAO( object ):
 
     try:
        
-      game = Game( game_name = name, passwd = password, number_players = num_players)
+      game = Game( game_name = name, passwd = password, number_players = num_players, map_name=map_name)
 
       db.put( game )
 
@@ -232,7 +241,7 @@ class DAO( object ):
     status = StatusCodes.GAME_DOES_NOT_EXIST
 
     try:
-      self.log.debug("Trying to get  %s"%(username) )
+      self.log.debug("Trying to get  %s"%(name) )
       
       game_list = db.GqlQuery("SELECT * FROM Game WHERE game_name = :1 ", name )
       
@@ -255,12 +264,16 @@ class DAO( object ):
     status = StatusCodes.GAME_DOES_NOT_EXIST
 
     try:
-      self.log.debug("Trying to get  %s"%(name) )
+      self.log.debug("Trying to get %s"%(name) )
       
       game_list = db.GqlQuery("SELECT * FROM Game WHERE game_name = :1 ", name )
       
+      self.log.debug("game count is " + str( game_list.count() ) )
       if game_list.count() > 0:
     
+        self.log.debug("dir " + str( dir( game_list )))
+        self.log.debug("list " + str( game_list ))
+
         game = game_list.get()
         game.state = state
         db.put( game )
@@ -302,6 +315,33 @@ class DAO( object ):
 
     return ( status, player)
 
+  def getAllPlayersForGame( self, game_name ):
+    """
+    Get all players for a game
+    """
+
+    self.log.info("DAO:getAllPlayersForGame start")
+
+    player_list = []
+    status = StatusCodes.PLAYER_NOT_IN_GAME
+
+    try:
+      
+      
+      player_list2 = db.GqlQuery("SELECT * FROM Player WHERE user_name = :1 and game_name = :2", user_name, game_name )
+      
+      
+      if player_list2.count() > 0:
+        for i in player_list2:
+          player_list.append( i )
+
+        status = StatusCodes.SUCCESSFUL
+
+    except:
+      self.log.error("DAO:getAllPlayersForGame ex " + traceback.format_exc() )
+
+    return ( status, player_list)
+
   def createPlayer( self, user, game ):
     self.log.info("DAO:createPlayer start")
 
@@ -311,7 +351,7 @@ class DAO( object ):
     try:
       
       # hate the fact I'm using names and objects... 
-      player = Player( user_name = user.name, game_name = game.name, user = user, game = game )
+      player = Player( user_name = user.name, game_name = game.game_name, user = user, game = game )
 
       db.put( player )
 
@@ -324,8 +364,8 @@ class DAO( object ):
       
 ########################################
 
-  def createCountryForPlayer( self, player_name, country_name, num_armies, game_name ):
-    self.log.info("DAO:createCountry start")
+  def createCountryForPlayer( self, game_name, player_name, country_name, num_armies ):
+    self.log.info("DAO:createCountryForPlayer start")
 
     status = StatusCodes.SUCCESSFUL
     country = None
@@ -345,4 +385,34 @@ class DAO( object ):
 
     return ( status, country )
 
+  def getCountryForPlayer( self, game_name, player_name, country_name ): 
+    """
+    Get country for specific player/game combo.
+    """
+    self.log.info("DAO:getCountryForPlayer start")
+
+    status = StatusCodes.SUCCESSFUL
+    country = None
+
+    try:
+
+      country_list = db.GqlQuery("SELECT * FROM Country WHERE player = :1 and name = :2", player_name, game_name )
+      
+      
+      if player_list.count() > 0:
+    
+        player = player_list.get()
+        status = StatusCodes.SUCCESSFUL
+      ( player_stat, player ) = self.getPlayerForGame( player_name, game_name )
+
+      if player_stat == StatusCodes.SUCCESSFUL:
+        # hate the fact I'm using names and objects... 
+        country = Country( player = player, armies = num_armies, name = country_name )
+        db.put( country )
+
+    except:
+      self.log.error("DAO:getCountryForPlayer ex " + traceback.format_exc() )
+      status = StatusCodes.FAILED
+
+    return ( status, country )
 

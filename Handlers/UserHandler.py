@@ -6,6 +6,7 @@ from DAO.DAO import DAO
 from DAO import StatusCodes
 from Common.LogRoutine import *
 from Common.configobj import ConfigObj
+import random
 
 class UserHandler( webapp.RequestHandler ):
     
